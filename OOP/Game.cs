@@ -1,6 +1,11 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
+using System.Text.Unicode;
+using System.Threading;
+using HtmlAgilityPack;
 
 namespace OOP
 {
@@ -121,6 +126,119 @@ namespace OOP
 
     public class Game
     {
+        public string GetLinkToParser()
+        {
+            int taskNum = 0;
+            List<string> links = new List<string>();
+            string link = null;
+
+            // Считывание списка вариантов
+            string path = @"/Users/kulakov/RiderProjects/OOP/OOP/link.txt";
+            try
+            {
+                using (StreamReader sr = new StreamReader(path))
+                {
+                    String tempString = sr.ReadToEnd();
+                    string[] subs = tempString.Split('\n');
+                    
+                    // Выбор случайного варианта
+                    Random r = new Random();
+                    int rInt = r.Next(0, subs.Length);
+                    link = subs[rInt];
+                }
+            }
+            catch(Exception e){}
+            
+            return link;
+        }
+
+        // Парсер
+        public List<Pair<string, string>> ParserHTML()
+        {
+            Console.Clear();
+            Console.WriteLine("Загрузка заданий..");
+
+            // Получение варианта задания
+            string linkToVar = GetLinkToParser();
+            
+            // Cчётчик количества вопросов
+            int countQuestions = 0;
+            
+            // Словарь заданий для игры
+            List<Pair<string, string>> dict = new List<Pair<string, string>>();
+            
+            HtmlWeb ws = new HtmlWeb();
+            ws.OverrideEncoding = Encoding.UTF8;
+            
+            // Загружаем тестовый вариант
+            HtmlDocument doc = ws.Load(linkToVar);
+
+            ArrayList listLinkToTask = new ArrayList();
+            int countTask = 0;
+
+            // Получаем список ссылок на задания
+            foreach (HtmlNode node in doc.DocumentNode.SelectNodes("//div[contains(@class, 'prob_list')]//a[@href]"))
+            {
+                listLinkToTask.Add("https://ege.sdamgia.ru" + node.GetAttributeValue("href", null));
+                // Console.WriteLine((countTask+1) + " - " + "https://ege.sdamgia.ru" + node.GetAttributeValue("href", null));
+                countTask += 1;
+            }
+
+            // Загружаем каждое вложенное задание
+            foreach (string o in listLinkToTask)
+            {
+                string textTask = null;
+                string answerTask = null;
+                
+                Thread.Sleep(500);
+                //Console.WriteLine(o);
+                doc = ws.Load(o);
+
+                foreach (HtmlNode link in doc.DocumentNode.SelectNodes("//div[contains(@class, 'pbody')]//p"))
+                {
+                    textTask = link.InnerText;
+                    // Console.WriteLine("Задача: " + link.InnerText);
+                }
+
+                ArrayList tempList = new ArrayList();
+                foreach (HtmlNode link in doc.DocumentNode.SelectNodes("//div[contains(@class, 'nobreak solution')]//p//text()"))
+                {
+                    string tempStr = link.InnerText;
+                    string[] subs = tempStr.Split(' ');
+                    tempList.Add(tempStr);
+                }
+                
+                int ic = 0;
+                string tempStr2 = null;
+                foreach (var a in tempList)
+                {
+                    tempStr2 += a;
+                }
+                string[] subsste1 = tempStr2.Split("Ответ: ");
+                string[] subsste2 = subsste1[1].Split('.');
+
+                answerTask = subsste2[0];
+                // Console.WriteLine(answerTask);
+                tempList = null;
+
+                Pair<string, string> tempPair = new Pair<string, string>();
+                tempPair.First = textTask;
+                tempPair.Second = answerTask;
+
+                int num;
+                
+                bool isNum = int.TryParse(tempPair.Second, out num);
+                if (isNum && tempPair.First.Length > 20)
+                {
+                    countQuestions += 1;
+                    dict.Add(tempPair);
+                    Console.WriteLine("Загружен " + countQuestions + " вопрос");
+                }
+            }
+            return dict;
+        }
+        
+        
         // Выбор профиля
         public int SelectProfile(List<Profile> users, int countUsers)
         {
@@ -156,7 +274,7 @@ namespace OOP
         public int GetDifficult()
         {
             int difficult = 0;
-            Console.WriteLine("Выберите сложность:\n1-Легко\n2-Средне\n3-Сложно");
+            Console.WriteLine("Выберите сложность:\n1-Легко\n2-Средне\n3-Сложно\n4-Задания ЕГЭ");
             try
             {
                 difficult = Int32.Parse(Console.ReadLine());
@@ -192,6 +310,9 @@ namespace OOP
                         case 3:
                             subs = subs[3].Split('\n');
                             break;
+                        case 4:
+                            return ParserHTML();
+                            break;
                         default: break;
                     }
 
@@ -211,7 +332,7 @@ namespace OOP
 
             return dict;
         }
-
+        
         
         // Базовое меню выбора
         public void Menu()
@@ -250,7 +371,7 @@ namespace OOP
             }
         }
 
-
+        
         // Проведение игры
         public void Play(List<Profile> users, int profileNumber, int difficult, List<Pair<string, string>> dict)
         {
@@ -265,6 +386,10 @@ namespace OOP
                 Console.WriteLine("Вопрос: " + countQuestion + " / " + dict.Count + Environment.NewLine);
                 
                 Console.WriteLine(dict[countQuestion - 1].First);
+                if (difficult == 4)
+                {
+                    Console.WriteLine("\n(Answer: " + dict[countQuestion-1].Second +")");
+                }
                 tempAnswer = Console.ReadLine();
 
                 if (dict[countQuestion - 1].Second == tempAnswer)
