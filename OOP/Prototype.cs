@@ -16,11 +16,12 @@ namespace OOP
                 return (Person) this.MemberwiseClone();
             }
 
+            [Obsolete]
             public Person DeepCopy()
             {
                 Person clone = (Person) this.MemberwiseClone();
                 clone.IdInfo = new IdInfo(IdInfo.IdNumber);
-                clone.Name = String.Copy(Name);
+                clone.Name = string.Copy(Name);
                 return clone;
             }
         }

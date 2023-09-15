@@ -30,12 +30,12 @@ namespace OOP
             Console.Write(builder.GetProduct().ListParts());
         }
 
-        
+
         // Паттерн Адаптер
         // Позволяет объектам с несовместимыми интерфейсами работать вместе
         static void StartAdapter()
         {
-            Adaptee adaptee = new Adaptee();
+            Adaptee adaptee = new();
             ITarget target = new Adapter(adaptee);
 
             Console.WriteLine("Adaptee interface is incompatible with the client.");
@@ -43,13 +43,14 @@ namespace OOP
 
             Console.WriteLine(target.GetRequest());
         }
-        
-        
+
+
         // Паттерн Прототип
         // Позволяет копировать объекты не вдаваясь в подробности их реализации
+        [Obsolete]
         static void StartPrototype(){
 
-            Prototype.Person p1 = new Prototype.Person();
+            Prototype.Person p1 = new();
             p1.Age = 42;
             p1.BirthDate = Convert.ToDateTime("1977-01-01");
             p1.Name = "Jack Daniels";
@@ -91,15 +92,15 @@ namespace OOP
         // Позволяет динамически добавлять объектам новую функциональность
         static void StartDecorator()
         {
-            Client client = new Client();
+            Client client = new();
 
             var simple = new ConcreteComponent();
             Console.WriteLine("Client: I get a simple component:");
             client.ClientCode(simple);
             Console.WriteLine();
 
-            ConcreteDecoratorA decorator1 = new ConcreteDecoratorA(simple);
-            ConcreteDecoratorB decorator2 = new ConcreteDecoratorB(decorator1);
+            ConcreteDecoratorA decorator1 = new(simple);
+            ConcreteDecoratorB decorator2 = new(decorator1);
             Console.WriteLine("Client: Now I've got a decorated component:");
             client.ClientCode(decorator2);
         }
@@ -127,9 +128,9 @@ namespace OOP
         // Представляет простой интерфейс к сложной системе классов, библиотеке или фреймворку
         static void StartFacade()
         {
-            Subsystem1 subsystem1 = new Subsystem1();
-            Subsystem2 subsystem2 = new Subsystem2();
-            Facade facade = new Facade(subsystem1, subsystem2);
+            Subsystem1 subsystem1 = new();
+            Subsystem2 subsystem2 = new();
+            Facade facade = new(subsystem1, subsystem2);
             Client.ClientCode(facade);
         }
 
@@ -171,27 +172,18 @@ namespace OOP
             component2.DoD();
         }
 
-        
-        // Игра с подстановкой нужных букв в слова
-        static void StartGame()
-        {
-            Game gm = new Game();
-            gm.Menu();
-        }
-        
-        
+        [Obsolete]
         static void Main(string[] args)
         {
             Console.WriteLine("Select Pattern:\n1-Adapter    2-Builder\n" +
                               "3-Decorator  4-Facade\n5-Mediator   " +
-                              "6-Observer\n7-Prototype  8-Singleton\n" +
-                              "9-Game");
+                              "6-Observer\n7-Prototype  8-Singleton\n");
             int i = 0;
             try
             {
                 i = Int16.Parse(Console.ReadLine());
             }
-            catch(Exception e) {}
+            catch(Exception e) { Console.WriteLine(e); }
             Console.WriteLine();
             
             switch (i)
@@ -212,8 +204,6 @@ namespace OOP
                     StartPrototype(); break;
                 case 8:
                     StartSingleton(); break;
-                case 9:
-                    StartGame(); break;
                 default:
                     Console.WriteLine("This case not found");
                     break;
