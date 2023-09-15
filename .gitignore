@@ -210,7 +210,7 @@ project.lock.json
 
 **/bin/*
 **/obj/*
-
+/obj
 
 
 # Visual Studio Code
